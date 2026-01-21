@@ -75,54 +75,16 @@ public class Buscaminas {
         for(int i = 0; i < LADO_TABLERO; i++){
             for(int j = 0; j < LADO_TABLERO; j++){
                 contador = 0; //reiniciar para cada mina
-
-                //filtro para evitar el outOfRange
-                if(i+valoresI[contador] >= 0 && i+valoresI[contador] < LADO_TABLERO
-                        && j+valoresJ[contador] >= 0 && j+valoresJ[contador] < LADO_TABLERO){
-                    contador++;
-                } //este pequeño if sustituye al tocho de abajo entero
-                /*
-                if(j-1 >= 0){ //las 3 casillas de la izquierda son j-1
-                    if(i-1 >= 0){
-                        if(minas[i-1][j-1].equals("*")){ //arriba a la izquierda
-                            contador++;
-                        }
-                    }
-                    if(minas[i][j-1].equals("*")){ //a la izquierda
-                        contador++;
-                    }
-                    if(i+1 < LADO_TABLERO){
-                        if(minas[i+1][j-1].equals("*")){ //abajo a la izquierda
-                            contador++;
-                        }
+                //System.out.println("[" + i + ", " + j + "] "); //comprobar flujo
+                for(int k = 0; k < valoresI.length; k++){
+                    //filtro para evitar el outOfRange
+                    if(i+valoresI[k] >= 0 && i+valoresI[k] < LADO_TABLERO
+                            && j+valoresJ[k] >= 0 && j+valoresJ[k] < LADO_TABLERO){
+                                if(minas[i+valoresI[k]][j+valoresJ[k]] == "*"){
+                                    contador++;
+                                }
                     }
                 }
-                if(j+1 < LADO_TABLERO){ //las 3 casillas de la derecha son j+1
-                    if(i-1 >= 0){
-                        if(minas[i-1][j+1].equals("*")){ //arriba a la derecha
-                            contador++;
-                        }
-                    }
-                    if(minas[i][j+1].equals("*")){ //a la derecha
-                        contador++;
-                    }
-                    if(i+1 < LADO_TABLERO){
-                        if(minas[i+1][j+1].equals("*")){ //abajo a la derecha
-                            contador++;
-                        }
-                    }
-                }
-                if(i-1 >= 0){
-                    if(minas[i-1][j].equals("*")){ //casilla de arriba
-                        contador++;
-                    }
-                }
-                if(i+1 < LADO_TABLERO){
-                    if(minas[i+1][j].equals("*")){ //casilla de abajo
-                        contador++;
-                    }
-                }
-                 */
                 //una vez que hemos hecho los cálculos, escribimos en la casilla
                 if(!minas[i][j].equals("*")){ //sólo se escribe algo si en la casilla no hay una mina
                     if(contador != 0){ //si el contador es cero se queda como está. Si no, escribimos el número
