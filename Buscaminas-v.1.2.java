@@ -13,7 +13,7 @@ public class Buscaminas {
     static String[][] minas = new String[LADO_TABLERO][LADO_TABLERO];
     static String[][] jugador = new String[LADO_TABLERO][LADO_TABLERO];
     static boolean victoria = false, minaPisada = false;
-    static int contadorCasillas = LADO_TABLERO * LADO_TABLERO;
+    static int contadorCasillas = LADO_TABLERO * LADO_TABLERO; //comienza en lado*lado y va bajando según se revelan casillas
     static Scanner sc = new Scanner(System.in);
 
     //este metodo pone los caracteres por defecto en los tableros
@@ -31,20 +31,19 @@ public class Buscaminas {
     static void pintarTableros(String[][] array, String nombre){
         System.out.println("Pintando tablero " + nombre + ": \n");
         for(int c = 0; c< LADO_TABLERO; c++){
-            System.out.print( c + "  ");
+            System.out.print( c + "  "); //formato para ayudar visualmente a identificar columnas
         }
         System.out.println(" ");
-        for(int c = 0; c< LADO_TABLERO; c++){
+        for(int c = 0; c< LADO_TABLERO; c++){ //formato para ayudar visualmente a identificar columnas
             System.out.print("|  ");
         }
 
         System.out.println(" \n");
         for(int i = 0; i < LADO_TABLERO; i++){
             for(int j = 0; j < LADO_TABLERO; j++){
-
                 System.out.print(array[i][j]+ "  ");
             }
-            System.out.println(" -- " + i);
+            System.out.println(" -- " + i); //formato para ayudar visualmente a identificar filas
         }
         System.out.println("\n");
     }
@@ -60,7 +59,7 @@ public class Buscaminas {
                 randomX = (int)round(random()*(LADO_TABLERO-1)); //coordenada X aleatoria
 
                 if(minas[randomY][randomX].equals("*")){
-                    hayMina = true;//si ya hubiera una mina en esa posición, repetimos
+                    hayMina = true;//si ya hubiera una mina en esa posición, volvemos atrás
                 }else{
                     minas[randomY][randomX] = "*"; //si no, pintar mina
                 }
@@ -70,24 +69,25 @@ public class Buscaminas {
 
     //este metodo comprueba, para cada casilla no-mina, cuántas minas adyacentes hay
     static void calcularNumeros(){
-        int contador;
+        int contador; //contador de minas adyacentes
+
         //recorrer el tablero haciendo los cálculos
         for(int i = 0; i < LADO_TABLERO; i++){
             for(int j = 0; j < LADO_TABLERO; j++){
-                contador = 0; //reiniciar para cada mina
+                contador = 0; //reiniciar para cada casilla
                 //System.out.println("[" + i + ", " + j + "] "); //comprobar flujo
-                for(int k = 0; k < valoresI.length; k++){
-                    //filtro para evitar el outOfRange
-                    if(i+valoresI[k] >= 0 && i+valoresI[k] < LADO_TABLERO
-                            && j+valoresJ[k] >= 0 && j+valoresJ[k] < LADO_TABLERO){
-                                if(minas[i+valoresI[k]][j+valoresJ[k]] == "*"){
-                                    contador++;
+                for(int k = 0; k < valoresI.length; k++){ //para cada mina, evaluamos las 8 casillas adyacentes
+                    //filtro para evitar el outOfRange, se asegura de que evaluamos dentro del array
+                    if(i+valoresI[k] >= 0 && i+valoresI[k] < LADO_TABLERO &&
+                       j+valoresJ[k] >= 0 && j+valoresJ[k] < LADO_TABLERO){
+                                if(minas[i+valoresI[k]][j+valoresJ[k]] == "*"){ //si además detecto una mina
+                                    contador++; //añado 1 al contador de minas
                                 }
                     }
                 }
                 //una vez que hemos hecho los cálculos, escribimos en la casilla
                 if(!minas[i][j].equals("*")){ //sólo se escribe algo si en la casilla no hay una mina
-                    if(contador != 0){ //si el contador es cero se queda como está. Si no, escribimos el número
+                    if(contador != 0){ //si contador==0 se queda como está (espacio vacío). Si no, escribimos el número
                         minas[i][j]=contador+"";
                     }
                 }
@@ -134,46 +134,38 @@ public class Buscaminas {
          *   i+1, j-1        i+1,j           i+1,j+1
          *
          *   Empezando por la esquina superior izquierda y en sentido de las agujas del reloj,
-         *   metemos los coeficientes de ambas variables en un array. De esta forma, usando un
+         *   metemos los coeficientes de 'i' y 'j' en un array. De esta forma, usando un
          *   contador de 0 al largo del array, tendremos los valores para hacer operaciones con la
          *   coordenada del jugador.
          * */
 
 
-        if(minas[y][x].equals(" ") && !jugador[y][x].equals(" ")){ //detiene la recursividad
+        if(minas[y][x].equals(" ") && jugador[y][x].equals("?")){ //detiene la recursividad
             System.out.println("Espacio en blanco encontrado en: [" + y + ", " + x + "]"); //comprobando flujo
             jugador[y][x] = " "; //borrar casilla
+            contadorCasillas--; //por cada casilla revelada, restamos 1 al contador de casillas
             for(int contador = 0; contador < valoresI.length; contador++){
                 //ahora evitamos el outOfRange haciendo cálculos con las coordenadas
                 if(y+valoresI[contador] >= 0 && y+valoresI[contador] < LADO_TABLERO
                         && x+valoresJ[contador] >= 0 && x+valoresJ[contador] < LADO_TABLERO){
+
                     expandirCasillaBlanca(y+valoresI[contador], x+valoresJ[contador]); //recursividad
                 }
             }
         }else{
             switch(minas[y][x]){ //menos engorroso de escribir que los if
                 case "1", "2", "3", "4", "5", "6", "7", "8":
+                    if(jugador[y][x] != minas[y][x]){ //si son iguales, ya se había pasado por aquí antes, por lo que omitimos la resta del contador
+                        contadorCasillas--; //por cada casilla revelada, restamos 1 al contador de casillas
+                    }
                     jugador[y][x] = minas[y][x]; //revelar número
-                    System.out.println("Número encontrado en: [" + y + ", " + x + "]"); //comprobando flujo
+                    //contadorCasillasRecursividad--; //por cada casilla revelada, restamos 1 al contador de casillas
+                    //System.out.println("Número encontrado en: [" + y + ", " + x + "]"); //comprobando flujo
                     break;
                 //default:
                 //System.out.println("Se omite evaluar: [" + y + ", " + x + "]"); //comprobando flujo
             }
         }
-    }
-
-    //esto no es lo más eficiente, pero el contador que teníamos pensado no funciona como debería.
-    static int contarCasillasRestantes(){
-        int restantes = 0;
-
-        for(int i = 0; i < LADO_TABLERO; i++){
-            for(int j = 0; j < LADO_TABLERO; j++){
-                if(jugador[i][j].equals("?") || jugador[i][j].equals("!")){
-                    restantes++;
-                }
-            }
-        }
-        return restantes;
     }
 
     static void partida(){
@@ -183,7 +175,7 @@ public class Buscaminas {
         boolean accionCorrecta = false;
 
         do {
-            System.out.println("Quedan " + contadorCasillas + " casillas por descubrir");
+            //System.out.println("Quedan " + contadorCasillas + " casillas por descubrir: [contador NO recursivo]");
             pintarTableros(jugador, "Jugador");
 
             do { //validación coordenada Y
@@ -238,11 +230,12 @@ public class Buscaminas {
                             break;
                     }
                 }
-
             }
-            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++\n");
-            contadorCasillas = contarCasillasRestantes();
-            if(contadorCasillas == NUMERO_MINAS){
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"); //feedback tras jugada
+            System.out.println("Tienes que romper " +
+                    (contadorCasillas - NUMERO_MINAS) + " casillas más para ganar.");
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+            if(contadorCasillas == NUMERO_MINAS){ //condición de victoria
                 victoria = true;
             }
         }while(!victoria);
@@ -263,10 +256,10 @@ public class Buscaminas {
     public static void main(String[] args) {
         inicializarTableros();
         posicionarMinas();
-        pintarTableros(minas, "Minas"); //pintar para ver cómo va
-        pintarTableros(jugador, "Jugador"); //pintar para ver cómo va
+        pintarTableros(minas, "Minas"); //pintar para ver cómo va ***BORRAR PARA JUEGO REAL
+        pintarTableros(jugador, "Jugador"); //pintar para ver cómo va ***BORRAR PARA JUEGO REAL
         calcularNumeros();
-        pintarTableros(minas, "Minas"); //pintar para ver los cálculos de los números
+        pintarTableros(minas, "Minas"); //pintar para ver los cálculos de los números ***BORRAR PARA JUEGO REAL
         mostrarMenu();
         partida();
     }
